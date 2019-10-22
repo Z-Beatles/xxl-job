@@ -21,7 +21,6 @@ public class JobApiController implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
     }
 
     @RequestMapping(AdminBiz.MAPPING)
@@ -29,6 +28,4 @@ public class JobApiController implements InitializingBean {
     public void api(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         XxlJobScheduler.invokeAdminService(request, response);
     }
-
-
 }
