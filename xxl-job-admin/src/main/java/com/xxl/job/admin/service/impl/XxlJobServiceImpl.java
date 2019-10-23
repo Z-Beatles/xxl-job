@@ -94,8 +94,9 @@ public class XxlJobServiceImpl implements XxlJobService {
         }
 
         // ChildJobId valid
-        if (jobInfo.getChildJobId() != null && jobInfo.getChildJobId().trim().length() > 0) {
-            String[] childJobIds = jobInfo.getChildJobId().split(",");
+        String childJobId = jobInfo.getChildJobId();
+        if (childJobId != null && childJobId.trim().length() > 0) {
+            String[] childJobIds = childJobId.split(",");
             for (String childJobIdItem : childJobIds) {
                 if (childJobIdItem != null && childJobIdItem.trim().length() > 0 && isNumeric(childJobIdItem)) {
                     XxlJobInfo childJobInfo = xxlJobInfoDao.loadById(Integer.parseInt(childJobIdItem));
@@ -109,7 +110,7 @@ public class XxlJobServiceImpl implements XxlJobService {
                 }
             }
 
-            jobInfo.setChildJobId(jobInfo.getChildJobId());
+            jobInfo.setChildJobId(childJobId);
         }
 
         // add in db
@@ -131,92 +132,84 @@ public class XxlJobServiceImpl implements XxlJobService {
 
     @Override
     public ReturnT<String> update(XxlJobInfo jobInfo) {
-
         // valid
         if (!CronExpression.isValidExpression(jobInfo.getJobCron())) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_unvalid"));
+            return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_unvalid"));
         }
         if (jobInfo.getJobDesc() == null || jobInfo.getJobDesc().trim().length() == 0) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_jobdesc")));
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_jobdesc")));
         }
         if (jobInfo.getAuthor() == null || jobInfo.getAuthor().trim().length() == 0) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_author")));
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("system_please_input") + I18nUtil.getString("jobinfo_field_author")));
         }
         if (ExecutorRouteStrategyEnum.match(jobInfo.getExecutorRouteStrategy(), null) == null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorRouteStrategy") + I18nUtil.getString("system_unvalid")));
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorRouteStrategy") + I18nUtil.getString("system_unvalid")));
         }
         if (ExecutorBlockStrategyEnum.match(jobInfo.getExecutorBlockStrategy(), null) == null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorBlockStrategy") + I18nUtil.getString("system_unvalid")));
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_executorBlockStrategy") + I18nUtil.getString("system_unvalid")));
         }
 
         // ChildJobId valid
-        if (jobInfo.getChildJobId() != null && jobInfo.getChildJobId().trim().length() > 0) {
-            String[] childJobIds = jobInfo.getChildJobId().split(",");
+        String childJobId = jobInfo.getChildJobId();
+        if (childJobId != null && childJobId.trim().length() > 0) {
+            String[] childJobIds = childJobId.split(",");
             for (String childJobIdItem : childJobIds) {
                 if (childJobIdItem != null && childJobIdItem.trim().length() > 0 && isNumeric(childJobIdItem)) {
-                    XxlJobInfo childJobInfo = xxlJobInfoDao.loadById(Integer.valueOf(childJobIdItem));
+                    XxlJobInfo childJobInfo = xxlJobInfoDao.loadById(Integer.parseInt(childJobIdItem));
                     if (childJobInfo == null) {
-                        return new ReturnT<String>(ReturnT.FAIL_CODE,
+                        return new ReturnT<>(ReturnT.FAIL_CODE,
                                 MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_not_found")), childJobIdItem));
                     }
                 } else {
-                    return new ReturnT<String>(ReturnT.FAIL_CODE,
+                    return new ReturnT<>(ReturnT.FAIL_CODE,
                             MessageFormat.format((I18nUtil.getString("jobinfo_field_childJobId") + "({0})" + I18nUtil.getString("system_unvalid")), childJobIdItem));
                 }
             }
 
-            String temp = "";    // join ,
-            for (String item : childJobIds) {
-                temp += item + ",";
-            }
-            temp = temp.substring(0, temp.length() - 1);
-
-            jobInfo.setChildJobId(temp);
+            jobInfo.setChildJobId(childJobId);
         }
 
         // group valid
         XxlJobGroup jobGroup = xxlJobGroupDao.load(jobInfo.getJobGroup());
         if (jobGroup == null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_unvalid")));
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_jobgroup") + I18nUtil.getString("system_unvalid")));
         }
 
         // stage job info
-        XxlJobInfo exists_jobInfo = xxlJobInfoDao.loadById(jobInfo.getId());
-        if (exists_jobInfo == null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));
+        XxlJobInfo existsJobInfo = xxlJobInfoDao.loadById(jobInfo.getId());
+        if (existsJobInfo == null) {
+            return new ReturnT<>(ReturnT.FAIL_CODE, (I18nUtil.getString("jobinfo_field_id") + I18nUtil.getString("system_not_found")));
         }
 
         // next trigger time (5s后生效，避开预读周期)
-        long nextTriggerTime = exists_jobInfo.getTriggerNextTime();
-        if (exists_jobInfo.getTriggerStatus() == 1 && !jobInfo.getJobCron().equals(exists_jobInfo.getJobCron())) {
+        long nextTriggerTime = existsJobInfo.getTriggerNextTime();
+        if (existsJobInfo.getTriggerStatus() == 1 && !jobInfo.getJobCron().equals(existsJobInfo.getJobCron())) {
             try {
                 Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date(System.currentTimeMillis() + JobScheduleHelper.PRE_READ_MS));
                 if (nextValidTime == null) {
-                    return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_never_fire"));
+                    return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_never_fire"));
                 }
                 nextTriggerTime = nextValidTime.getTime();
             } catch (ParseException e) {
                 logger.error(e.getMessage(), e);
-                return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_unvalid") + " | " + e.getMessage());
+                return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_unvalid") + " | " + e.getMessage());
             }
         }
 
-        exists_jobInfo.setJobGroup(jobInfo.getJobGroup());
-        exists_jobInfo.setJobCron(jobInfo.getJobCron());
-        exists_jobInfo.setJobDesc(jobInfo.getJobDesc());
-        exists_jobInfo.setAuthor(jobInfo.getAuthor());
-        exists_jobInfo.setAlarmEmail(jobInfo.getAlarmEmail());
-        exists_jobInfo.setExecutorRouteStrategy(jobInfo.getExecutorRouteStrategy());
-        exists_jobInfo.setExecutorHandler(jobInfo.getExecutorHandler());
-        exists_jobInfo.setExecutorParam(jobInfo.getExecutorParam());
-        exists_jobInfo.setExecutorBlockStrategy(jobInfo.getExecutorBlockStrategy());
-        exists_jobInfo.setExecutorTimeout(jobInfo.getExecutorTimeout());
-        exists_jobInfo.setExecutorFailRetryCount(jobInfo.getExecutorFailRetryCount());
-        exists_jobInfo.setChildJobId(jobInfo.getChildJobId());
-        exists_jobInfo.setTriggerNextTime(nextTriggerTime);
-        xxlJobInfoDao.update(exists_jobInfo);
-
-
+        existsJobInfo.setJobGroup(jobInfo.getJobGroup());
+        existsJobInfo.setJobCron(jobInfo.getJobCron());
+        existsJobInfo.setJobDesc(jobInfo.getJobDesc());
+        existsJobInfo.setAuthor(jobInfo.getAuthor());
+        existsJobInfo.setAlarmEmail(jobInfo.getAlarmEmail());
+        existsJobInfo.setExecutorRouteStrategy(jobInfo.getExecutorRouteStrategy());
+        existsJobInfo.setExecutorHandler(jobInfo.getExecutorHandler());
+        existsJobInfo.setExecutorParam(jobInfo.getExecutorParam());
+        existsJobInfo.setExecutorBlockStrategy(jobInfo.getExecutorBlockStrategy());
+        existsJobInfo.setExecutorTimeout(jobInfo.getExecutorTimeout());
+        existsJobInfo.setExecutorFailRetryCount(jobInfo.getExecutorFailRetryCount());
+        existsJobInfo.setChildJobId(childJobId);
+        existsJobInfo.setTriggerNextTime(nextTriggerTime);
+        xxlJobInfoDao.update(existsJobInfo);
         return ReturnT.SUCCESS;
     }
 

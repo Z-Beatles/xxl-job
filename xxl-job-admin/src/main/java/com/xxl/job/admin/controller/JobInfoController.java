@@ -105,7 +105,6 @@ public class JobInfoController {
 
     @RequestMapping("/trigger")
     @ResponseBody
-    //@PermissionLimit(limit = false)
     public ReturnT<String> triggerJob(int id, String executorParam) {
         // force cover job param
         if (executorParam == null) {
@@ -117,31 +116,31 @@ public class JobInfoController {
     }
 
 
-	public static List<XxlJobGroup> filterJobGroupByRole(HttpServletRequest request, List<XxlJobGroup> jobGroupList_all) {
-		List<XxlJobGroup> jobGroupList = new ArrayList<>();
-		if (jobGroupList_all != null && jobGroupList_all.size() > 0) {
-			XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
-			if (loginUser.getRole() == 1) {
-				jobGroupList = jobGroupList_all;
-			} else {
-				List<String> groupIdStrs = new ArrayList<>();
-				if (loginUser.getPermission() != null && loginUser.getPermission().trim().length() > 0) {
-					groupIdStrs = Arrays.asList(loginUser.getPermission().trim().split(","));
-				}
-				for (XxlJobGroup groupItem : jobGroupList_all) {
-					if (groupIdStrs.contains(String.valueOf(groupItem.getId()))) {
-						jobGroupList.add(groupItem);
-					}
-				}
-			}
-		}
-		return jobGroupList;
-	}
+    public static List<XxlJobGroup> filterJobGroupByRole(HttpServletRequest request, List<XxlJobGroup> jobGroupList_all) {
+        List<XxlJobGroup> jobGroupList = new ArrayList<>();
+        if (jobGroupList_all != null && jobGroupList_all.size() > 0) {
+            XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
+            if (loginUser.getRole() == 1) {
+                jobGroupList = jobGroupList_all;
+            } else {
+                List<String> groupIdStrs = new ArrayList<>();
+                if (loginUser.getPermission() != null && loginUser.getPermission().trim().length() > 0) {
+                    groupIdStrs = Arrays.asList(loginUser.getPermission().trim().split(","));
+                }
+                for (XxlJobGroup groupItem : jobGroupList_all) {
+                    if (groupIdStrs.contains(String.valueOf(groupItem.getId()))) {
+                        jobGroupList.add(groupItem);
+                    }
+                }
+            }
+        }
+        return jobGroupList;
+    }
 
-	public static void validPermission(HttpServletRequest request, int jobGroup) {
-		XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
-		if (!loginUser.validPermission(jobGroup)) {
-			throw new RuntimeException(I18nUtil.getString("system_permission_limit") + "[username=" + loginUser.getUsername() + "]");
-		}
-	}
+    public static void validPermission(HttpServletRequest request, int jobGroup) {
+        XxlJobUser loginUser = (XxlJobUser) request.getAttribute(LoginService.LOGIN_IDENTITY_KEY);
+        if (!loginUser.validPermission(jobGroup)) {
+            throw new RuntimeException(I18nUtil.getString("system_permission_limit") + "[username=" + loginUser.getUsername() + "]");
+        }
+    }
 }

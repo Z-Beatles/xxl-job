@@ -41,7 +41,7 @@ public interface XxlJobService {
      * @param jobInfo
      * @return
      */
-    public ReturnT<String> update(XxlJobInfo jobInfo);
+    ReturnT<String> update(XxlJobInfo jobInfo);
 
     /**
      * remove job
@@ -50,7 +50,7 @@ public interface XxlJobService {
      * @param id
      * @return
      */
-    public ReturnT<String> remove(int id);
+    ReturnT<String> remove(int id);
 
     /**
      * start job
@@ -58,7 +58,7 @@ public interface XxlJobService {
      * @param id
      * @return
      */
-    public ReturnT<String> start(int id);
+    ReturnT<String> start(int id);
 
     /**
      * stop job
@@ -66,7 +66,7 @@ public interface XxlJobService {
      * @param id
      * @return
      */
-    public ReturnT<String> stop(int id);
+    ReturnT<String> stop(int id);
 
     /**
      * 获取运行报表信息
