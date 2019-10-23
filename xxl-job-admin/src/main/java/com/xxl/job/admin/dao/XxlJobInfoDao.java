@@ -41,9 +41,9 @@ public interface XxlJobInfoDao {
 
     public List<XxlJobInfo> getJobsByGroup(@Param("jobGroup") int jobGroup);
 
-    public int findAllCount();
+    int findAllCount();
 
-    public List<XxlJobInfo> scheduleJobQuery(@Param("maxNextTime") long maxNextTime);
+    List<XxlJobInfo> scheduleJobQuery(@Param("maxNextTime") long maxNextTime);
 
     public int scheduleUpdate(XxlJobInfo xxlJobInfo);
 

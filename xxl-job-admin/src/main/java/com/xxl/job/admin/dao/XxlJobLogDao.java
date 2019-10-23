@@ -43,7 +43,7 @@ public interface XxlJobLogDao {
 
     public int delete(@Param("jobId") int jobId);
 
-    public int triggerCountByHandleCode(@Param("handleCode") int handleCode);
+    int triggerCountByHandleCode(@Param("handleCode") int handleCode);
 
     List<Map<String, Object>> triggerCountByDay(@Param("from") Date from,
                                                 @Param("to") Date to);

@@ -14,7 +14,7 @@ public interface XxlJobRegistryDao {
 
     List<Integer> findDead(@Param("timeout") int timeout);
 
-    public int removeDead(@Param("ids") List<Integer> ids);
+    int removeDead(@Param("ids") List<Integer> ids);
 
     List<XxlJobRegistry> findAll(@Param("timeout") int timeout);
 

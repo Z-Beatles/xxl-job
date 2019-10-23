@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * job registry instance
+ * <p>
+ * 用于维护执行器在线机器地址列表
  *
  * @author xuxueli 2016-10-02 19:10:24
  */
@@ -40,24 +42,26 @@ public class JobRegistryMonitorHelper {
                         List<XxlJobGroup> groupList = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().findByAddressType(0);
                         if (groupList != null && !groupList.isEmpty()) {
 
-                            // remove dead address (admin/executor)
+                            // 移除所有超时的在线执行器 (admin/executor)
                             List<Integer> ids = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findDead(RegistryConfig.DEAD_TIMEOUT);
                             if (ids != null && ids.size() > 0) {
                                 XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().removeDead(ids);
                             }
 
-                            // fresh online address (admin/executor)
+                            // 刷新所有未超时的在线执行器 (admin/executor)
                             HashMap<String, List<String>> appAddressMap = new HashMap<>();
                             List<XxlJobRegistry> list = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAll(RegistryConfig.DEAD_TIMEOUT);
                             if (list != null) {
                                 for (XxlJobRegistry item : list) {
                                     if (RegistryConfig.RegistType.EXECUTOR.name().equals(item.getRegistryGroup())) {
+                                        // registryKey为执行器名称 example: xxl-job-executor-sample
                                         String appName = item.getRegistryKey();
                                         List<String> registryList = appAddressMap.get(appName);
                                         if (registryList == null) {
-                                            registryList = new ArrayList<String>();
+                                            registryList = new ArrayList<>();
                                         }
 
+                                        // registryValue为执行器地址和端口 169.254.84.151:10082
                                         if (!registryList.contains(item.getRegistryValue())) {
                                             registryList.add(item.getRegistryValue());
                                         }
@@ -66,19 +70,19 @@ public class JobRegistryMonitorHelper {
                                 }
                             }
 
-                            // fresh group address
+                            // 刷新自动注册的执行器在线机器列表
                             for (XxlJobGroup group : groupList) {
                                 List<String> registryList = appAddressMap.get(group.getAppName());
-                                String addressListStr = null;
+                                StringBuilder addressListStr = null;
                                 if (registryList != null && !registryList.isEmpty()) {
                                     Collections.sort(registryList);
-                                    addressListStr = "";
+                                    addressListStr = new StringBuilder();
                                     for (String item : registryList) {
-                                        addressListStr += item + ",";
+                                        addressListStr.append(item).append(",");
                                     }
-                                    addressListStr = addressListStr.substring(0, addressListStr.length() - 1);
+                                    addressListStr = new StringBuilder(addressListStr.substring(0, addressListStr.length() - 1));
                                 }
-                                group.setAddressList(addressListStr);
+                                group.setAddressList(addressListStr == null ? null : addressListStr.toString());
                                 XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().update(group);
                             }
                         }

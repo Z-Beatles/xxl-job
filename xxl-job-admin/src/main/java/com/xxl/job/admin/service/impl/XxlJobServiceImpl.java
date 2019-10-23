@@ -269,7 +269,7 @@ public class XxlJobServiceImpl implements XxlJobService {
         int jobLogCount = xxlJobLogDao.triggerCountByHandleCode(-1);
         int jobLogSuccessCount = xxlJobLogDao.triggerCountByHandleCode(ReturnT.SUCCESS_CODE);
 
-        // executor count
+        // 执行器数量
         Set<String> executorAddressSet = new HashSet<>();
         List<XxlJobGroup> groupList = xxlJobGroupDao.findAll();
 
