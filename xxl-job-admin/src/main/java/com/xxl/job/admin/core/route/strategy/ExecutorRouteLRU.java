@@ -11,10 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * LEAST_RECENTLY_USED（最近最久未使用）：最久为使用的机器优先被选举
+ * <pre>
  * 单个JOB对应的每个执行器，最久为使用的优先被选举
  *      a、LFU(Least Frequently Used)：最不经常使用，频率/次数
  *      b(*)、LRU(Least Recently Used)：最近最久未使用，时间
- *
+ * </pre>
  * Created by xuxueli on 17/3/10.
  */
 public class ExecutorRouteLRU extends ExecutorRouter {
@@ -27,7 +29,7 @@ public class ExecutorRouteLRU extends ExecutorRouter {
         // cache clear
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             jobLRUMap.clear();
-            CACHE_VALID_TIME = System.currentTimeMillis() + 1000*60*60*24;
+            CACHE_VALID_TIME = System.currentTimeMillis() + 1000 * 60 * 60 * 24;
         }
 
         // init lru
@@ -43,20 +45,20 @@ public class ExecutorRouteLRU extends ExecutorRouter {
         }
 
         // put new
-        for (String address: addressList) {
+        for (String address : addressList) {
             if (!lruItem.containsKey(address)) {
                 lruItem.put(address, address);
             }
         }
         // remove old
         List<String> delKeys = new ArrayList<>();
-        for (String existKey: lruItem.keySet()) {
+        for (String existKey : lruItem.keySet()) {
             if (!addressList.contains(existKey)) {
                 delKeys.add(existKey);
             }
         }
         if (delKeys.size() > 0) {
-            for (String delKey: delKeys) {
+            for (String delKey : delKeys) {
                 lruItem.remove(delKey);
             }
         }

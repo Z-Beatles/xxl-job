@@ -7,6 +7,8 @@ import com.xxl.job.core.biz.model.TriggerParam;
 import java.util.List;
 
 /**
+ * LAST（最后一个）：固定选择最后一个机器
+ * <p>
  * Created by xuxueli on 17/3/10.
  */
 public class ExecutorRouteLast extends ExecutorRouter {

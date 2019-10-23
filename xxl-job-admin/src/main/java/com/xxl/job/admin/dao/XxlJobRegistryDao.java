@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface XxlJobRegistryDao {
 
-    public List<Integer> findDead(@Param("timeout") int timeout);
+    List<Integer> findDead(@Param("timeout") int timeout);
 
     public int removeDead(@Param("ids") List<Integer> ids);
 
@@ -27,7 +27,7 @@ public interface XxlJobRegistryDao {
                             @Param("registryValue") String registryValue);
 
     public int registryDelete(@Param("registryGroup") String registGroup,
-                          @Param("registryKey") String registryKey,
-                          @Param("registryValue") String registryValue);
+                              @Param("registryKey") String registryKey,
+                              @Param("registryValue") String registryValue);
 
 }

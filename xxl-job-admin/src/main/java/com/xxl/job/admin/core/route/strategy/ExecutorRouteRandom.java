@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * RANDOM（随机）：随机选择在线的机器
+ * <p>
  * Created by xuxueli on 17/3/10.
  */
 public class ExecutorRouteRandom extends ExecutorRouter {
