@@ -110,8 +110,15 @@ public class XxlJobServiceImpl implements XxlJobService {
                 }
             }
 
-            jobInfo.setChildJobId(childJobId);
-        }
+			// join , avoid "xxx,,"
+			String temp = "";
+			for (String item:childJobIds) {
+				temp += item + ",";
+			}
+			temp = temp.substring(0, temp.length()-1);
+
+			jobInfo.setChildJobId(temp);
+		}
 
         // add in db
         xxlJobInfoDao.save(jobInfo);
@@ -166,8 +173,15 @@ public class XxlJobServiceImpl implements XxlJobService {
                 }
             }
 
-            jobInfo.setChildJobId(childJobId);
-        }
+			// join , avoid "xxx,,"
+			String temp = "";
+			for (String item:childJobIds) {
+				temp += item + ",";
+			}
+			temp = temp.substring(0, temp.length()-1);
+
+			jobInfo.setChildJobId(temp);
+		}
 
         // group valid
         XxlJobGroup jobGroup = xxlJobGroupDao.load(jobInfo.getJobGroup());

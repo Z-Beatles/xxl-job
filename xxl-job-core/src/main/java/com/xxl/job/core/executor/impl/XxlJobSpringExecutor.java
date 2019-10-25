@@ -49,7 +49,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                     String name = serviceBean.getClass().getAnnotation(JobHandler.class).value();
                     IJobHandler handler = (IJobHandler) serviceBean;
                     if (loadJobHandler(name) != null) {
-                        throw new RuntimeException("xxl-job jobhandler naming conflicts.error name:" + name);
+                        throw new RuntimeException("xxl-job jobhandler["+ name +"] naming conflicts.");
                     }
                     // 注册任务处理器
                     registJobHandler(name, handler);
