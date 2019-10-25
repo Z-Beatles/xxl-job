@@ -362,6 +362,7 @@ $(function() {
 	$(".add").click(function(){
 
 		// init-cronGen
+        $("#addModal .form input[name='jobCron']").show().siblings().remove();
         $("#addModal .form input[name='jobCron']").cronGen({});
 
 		$('#addModal').modal({backdrop: false, keyboard: false}).modal('show');
@@ -429,6 +430,8 @@ $(function() {
             }
             $("#addModal .form input[name='executorFailRetryCount']").val(executorFailRetryCount);
 
+            // process-cronGen
+            $("#addModal .form input[name='jobCron']").val( $("#addModal .form input[name='cronGen_display']").val() );
 
         	$.post(base_url + "/jobinfo/add",  $("#addModal .form").serialize(), function(data, status) {
     			if (data.code == "200") {
@@ -459,9 +462,6 @@ $(function() {
 		$("#addModal .form")[0].reset();
 		$("#addModal .form .form-group").removeClass("has-error");
 		$(".remote_panel").show();	// remote
-
-        // remove-cronGen
-        $("#addModal .form input[name='jobCron']").show().siblings().remove();
 
 		$("#addModal .form input[name='executorHandler']").removeAttr("readonly");
 	});
@@ -525,6 +525,7 @@ $(function() {
         $("#updateModal .form select[name=glueType]").change();
 
         // init-cronGen
+        $("#updateModal .form input[name='jobCron']").show().siblings().remove();
         $("#updateModal .form input[name='jobCron']").cronGen({});
 
 		// show
@@ -594,6 +595,9 @@ $(function() {
             }
             $("#updateModal .form input[name='executorFailRetryCount']").val(executorFailRetryCount);
 
+            // process-cronGen
+            $("#updateModal .form input[name='jobCron']").val( $("#updateModal .form input[name='cronGen_display']").val() );
+
 			// post
     		$.post(base_url + "/jobinfo/update", $("#updateModal .form").serialize(), function(data, status) {
     			if (data.code == "200") {
@@ -623,9 +627,6 @@ $(function() {
         updateModalValidate.resetForm();
         $("#updateModal .form")[0].reset();
         $("#updateModal .form .form-group").removeClass("has-error");
-
-		// remove-cronGen
-        $("#updateModal .form input[name='jobCron']").show().siblings().remove();
 	});
 
     /**
