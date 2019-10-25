@@ -17,16 +17,17 @@ public class ExecutorRegistryThread {
     private static Logger logger = LoggerFactory.getLogger(ExecutorRegistryThread.class);
 
     private static ExecutorRegistryThread instance = new ExecutorRegistryThread();
-    public static ExecutorRegistryThread getInstance(){
+
+    public static ExecutorRegistryThread getInstance() {
         return instance;
     }
 
     private Thread registryThread;
     private volatile boolean toStop = false;
-    public void start(final String appName, final String address){
 
+    public void start(final String appName, final String address) {
         // valid
-        if (appName==null || appName.trim().length()==0) {
+        if (appName == null || appName.trim().length() == 0) {
             logger.warn(">>>>>>>>>>> xxl-job, executor registry config fail, appName is null.");
             return;
         }
@@ -38,15 +39,14 @@ public class ExecutorRegistryThread {
         registryThread = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 // registry
                 while (!toStop) {
                     try {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address);
-                        for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
+                        for (AdminBiz adminBiz : XxlJobExecutor.getAdminBizList()) {
                             try {
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
-                                if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
+                                if (registryResult != null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                     registryResult = ReturnT.SUCCESS;
                                     logger.debug(">>>>>>>>>>> xxl-job registry success, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
                                     break;
@@ -62,7 +62,6 @@ public class ExecutorRegistryThread {
                         if (!toStop) {
                             logger.error(e.getMessage(), e);
                         }
-
                     }
 
                     try {
@@ -79,10 +78,10 @@ public class ExecutorRegistryThread {
                 // registry remove
                 try {
                     RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address);
-                    for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
+                    for (AdminBiz adminBiz : XxlJobExecutor.getAdminBizList()) {
                         try {
                             ReturnT<String> registryResult = adminBiz.registryRemove(registryParam);
-                            if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
+                            if (registryResult != null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                 registryResult = ReturnT.SUCCESS;
                                 logger.info(">>>>>>>>>>> xxl-job registry-remove success, registryParam:{}, registryResult:{}", new Object[]{registryParam, registryResult});
                                 break;
@@ -93,16 +92,14 @@ public class ExecutorRegistryThread {
                             if (!toStop) {
                                 logger.info(">>>>>>>>>>> xxl-job registry-remove error, registryParam:{}", registryParam, e);
                             }
-
                         }
-
                     }
                 } catch (Exception e) {
                     if (!toStop) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-                logger.info(">>>>>>>>>>> xxl-job, executor registry thread destory.");
+                logger.info(">>>>>>>>>>> xxl-job, executor registry thread destroy.");
 
             }
         });

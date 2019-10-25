@@ -18,12 +18,11 @@ import java.util.Properties;
 public class FrameLessXxlJobConfig {
     private static Logger logger = LoggerFactory.getLogger(FrameLessXxlJobConfig.class);
 
-
     private static FrameLessXxlJobConfig instance = new FrameLessXxlJobConfig();
+
     public static FrameLessXxlJobConfig getInstance() {
         return instance;
     }
-
 
     private XxlJobExecutor xxlJobExecutor = null;
 
@@ -32,7 +31,7 @@ public class FrameLessXxlJobConfig {
      */
     public void initXxlJobExecutor() {
 
-        // registry jobhandler
+        // registry jobHandler
         XxlJobExecutor.registJobHandler("demoJobHandler", new DemoJobHandler());
         XxlJobExecutor.registJobHandler("shardingJobHandler", new ShardingJobHandler());
         XxlJobExecutor.registJobHandler("httpJobHandler", new HttpJobHandler());
@@ -61,9 +60,9 @@ public class FrameLessXxlJobConfig {
     }
 
     /**
-     * destory
+     * destroy
      */
-    public void destoryXxlJobExecutor() {
+    public void destroyXxlJobExecutor() {
         if (xxlJobExecutor != null) {
             xxlJobExecutor.destroy();
         }
@@ -73,9 +72,9 @@ public class FrameLessXxlJobConfig {
     public static Properties loadProperties(String propertyFileName) {
         InputStreamReader in = null;
         try {
-            ClassLoader loder = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-            in = new InputStreamReader(loder.getResourceAsStream(propertyFileName), "UTF-8");;
+            in = new InputStreamReader(loader.getResourceAsStream(propertyFileName), "UTF-8");
             if (in != null) {
                 Properties prop = new Properties();
                 prop.load(in);

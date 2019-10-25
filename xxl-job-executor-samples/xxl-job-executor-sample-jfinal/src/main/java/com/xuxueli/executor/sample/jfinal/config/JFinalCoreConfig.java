@@ -48,7 +48,7 @@ public class JFinalCoreConfig extends JFinalConfig {
 			logger.error(e.getMessage(), e);
 		}
 	}
-	private void destoryXxlJobExecutor() {
+	private void destroyXxlJobExecutor() {
 		if (xxlJobExecutor != null) {
 			xxlJobExecutor.destroy();
 		}
@@ -67,7 +67,7 @@ public class JFinalCoreConfig extends JFinalConfig {
 
 	@Override
 	public void beforeJFinalStop() {
-		destoryXxlJobExecutor();
+		destroyXxlJobExecutor();
 	}
 
 	public void configConstant(Constants constants) {

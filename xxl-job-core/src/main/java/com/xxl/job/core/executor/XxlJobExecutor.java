@@ -72,31 +72,29 @@ public class XxlJobExecutor {
 
     // ---------------------- start + stop ----------------------
     public void start() throws Exception {
-
-        // init logpath
+        // 初始化日志文件
         XxlJobFileAppender.initLogPath(logPath);
 
-        // init invoker, admin-client
+        // 初始化AdminBizList，并且会创建AdminBiz的动态代理XxlRpcReferenceBean，而最后会用到这个类进行自动注册
         initAdminBizList(adminAddresses, accessToken);
 
-
-        // init JobLogFileCleanThread
+        // 开启日志清理线程
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
-        // init TriggerCallbackThread
+        // 初始化触发器回调线程(用RPC回调调度中心接口)
         TriggerCallbackThread.getInstance().start();
 
-        // init executor-server
+        // 初始化rpc服务
         port = port > 0 ? port : NetUtil.findAvailablePort(9999);
         ip = (ip != null && ip.trim().length() > 0) ? ip : IpUtil.getIp();
-        initRpcProvider(ip, port, appName, accessToken);
+        this.initRpcProvider(ip, port, appName, accessToken);
     }
 
     public void destroy() {
-        // destory executor-server
+        // destroy executor-server
         stopRpcProvider();
 
-        // destory jobThreadRepository
+        // destroy jobThreadRepository
         if (jobThreadRepository.size() > 0) {
             for (Map.Entry<Integer, JobThread> item : jobThreadRepository.entrySet()) {
                 removeJobThread(item.getKey(), "web container destroy and kill the job.");
@@ -106,13 +104,13 @@ public class XxlJobExecutor {
         jobHandlerRepository.clear();
 
 
-        // destory JobLogFileCleanThread
+        // destroy JobLogFileCleanThread
         JobLogFileCleanThread.getInstance().toStop();
 
-        // destory TriggerCallbackThread
+        // destroy TriggerCallbackThread
         TriggerCallbackThread.getInstance().toStop();
 
-        // destory invoker
+        // destroy invoker
         stopInvokerFactory();
     }
 
@@ -129,6 +127,7 @@ public class XxlJobExecutor {
 
                     String addressUrl = address.concat(AdminBiz.MAPPING);
 
+                    // 通过XxlRpcReferenceBean.getObject()设置动态代理，用来请求和处理rpc信息
                     AdminBiz adminBiz = (AdminBiz) new XxlRpcReferenceBean(
                             NetEnum.NETTY_HTTP,
                             serializer,
@@ -144,7 +143,7 @@ public class XxlJobExecutor {
                     ).getObject();
 
                     if (adminBizList == null) {
-                        adminBizList = new ArrayList<AdminBiz>();
+                        adminBizList = new ArrayList<>();
                     }
                     adminBizList.add(adminBiz);
                 }
@@ -173,23 +172,30 @@ public class XxlJobExecutor {
     // ---------------------- executor-server (rpc provider) ----------------------
     private XxlRpcProviderFactory xxlRpcProviderFactory = null;
 
+    /**
+     * 初始化rpc服务
+     *
+     * @param ip          ip
+     * @param port        端口
+     * @param appName     执行器名称
+     * @param accessToken token
+     * @throws Exception e
+     */
     private void initRpcProvider(String ip, int port, String appName, String accessToken) throws Exception {
-
         // init, provider factory
         String address = IpUtil.getIpPort(ip, port);
-        Map<String, String> serviceRegistryParam = new HashMap<String, String>();
+        Map<String, String> serviceRegistryParam = new HashMap<>();
         serviceRegistryParam.put("appName", appName);
         serviceRegistryParam.put("address", address);
 
         xxlRpcProviderFactory = new XxlRpcProviderFactory();
+        // init config
         xxlRpcProviderFactory.initConfig(NetEnum.NETTY_HTTP, Serializer.SerializeEnum.HESSIAN.getSerializer(), ip, port, accessToken, ExecutorServiceRegistry.class, serviceRegistryParam);
-
-        // add services
+        // 设置使用ExecutorBizImpl作为服务的处理类，供给调用中心调用
         xxlRpcProviderFactory.addService(ExecutorBiz.class.getName(), null, new ExecutorBizImpl());
 
         // start
         xxlRpcProviderFactory.start();
-
     }
 
     public static class ExecutorServiceRegistry extends ServiceRegistry {
@@ -239,10 +245,10 @@ public class XxlJobExecutor {
 
 
     // ---------------------- job handler repository ----------------------
-    private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<String, IJobHandler>();
+    private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<>();
 
     public static IJobHandler registJobHandler(String name, IJobHandler jobHandler) {
-        logger.info(">>>>>>>>>>> xxl-job register jobhandler success, name:{}, jobHandler:{}", name, jobHandler);
+        logger.info(">>>>>>>>>>> xxl-job register jobHandler success, name:{}, jobHandler:{}", name, jobHandler);
         return jobHandlerRepository.put(name, jobHandler);
     }
 
@@ -268,6 +274,12 @@ public class XxlJobExecutor {
         return newJobThread;
     }
 
+    /**
+     * 移除任务工作线程
+     *
+     * @param jobId           任务id
+     * @param removeOldReason 停止原因
+     */
     public static void removeJobThread(int jobId, String removeOldReason) {
         JobThread oldJobThread = jobThreadRepository.remove(jobId);
         if (oldJobThread != null) {
@@ -276,6 +288,12 @@ public class XxlJobExecutor {
         }
     }
 
+    /**
+     * 获取任务执行线程
+     *
+     * @param jobId 任务id
+     * @return
+     */
     public static JobThread loadJobThread(int jobId) {
         JobThread jobThread = jobThreadRepository.get(jobId);
         return jobThread;

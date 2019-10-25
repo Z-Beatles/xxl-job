@@ -19,7 +19,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
 
     @Override
     public void start() throws Exception {
-        // init JobHandler Repository
+        // 扫描并加载所有任务处理器
         initJobHandlerRepository(applicationContext);
 
         // refresh GlueFactory
@@ -29,22 +29,29 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         super.start();
     }
 
+    /**
+     * 初始化任务处理器
+     *
+     * @param applicationContext applicationContext
+     */
     private void initJobHandlerRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
             return;
         }
 
-        // init job handler action
+        // 获取所有任务处理器
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
 
         if (serviceBeanMap != null && serviceBeanMap.size() > 0) {
             for (Object serviceBean : serviceBeanMap.values()) {
                 if (serviceBean instanceof IJobHandler) {
+                    // 获取注解上的任务处理器名称
                     String name = serviceBean.getClass().getAnnotation(JobHandler.class).value();
                     IJobHandler handler = (IJobHandler) serviceBean;
                     if (loadJobHandler(name) != null) {
                         throw new RuntimeException("xxl-job jobhandler naming conflicts.error name:" + name);
                     }
+                    // 注册任务处理器
                     registJobHandler(name, handler);
                 }
             }

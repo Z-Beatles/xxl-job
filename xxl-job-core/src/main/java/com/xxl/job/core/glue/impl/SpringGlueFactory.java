@@ -18,7 +18,6 @@ import java.lang.reflect.Modifier;
 public class SpringGlueFactory extends GlueFactory {
     private static Logger logger = LoggerFactory.getLogger(SpringGlueFactory.class);
 
-
     /**
      * inject action of spring
      * @param instance

@@ -44,7 +44,7 @@ public class JbootConfig extends JbootAppListenerBase {
 
     // ---------------------- jboot ----------------------
 
-    private void destoryXxlJobExecutor() {
+    private void destroyXxlJobExecutor() {
         if (xxlJobExecutor != null) {
             xxlJobExecutor.destroy();
         }
@@ -58,7 +58,7 @@ public class JbootConfig extends JbootAppListenerBase {
 
     @Override
     public void onStop() {
-        destoryXxlJobExecutor();
+        destroyXxlJobExecutor();
         super.onStop();
     }
 }

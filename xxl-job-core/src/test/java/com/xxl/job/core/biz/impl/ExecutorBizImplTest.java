@@ -27,7 +27,6 @@ public class ExecutorBizImplTest {
 
     @Before
     public void before() throws Exception {
-
         // init executor
         xxlJobExecutor = new XxlJobExecutor();
         xxlJobExecutor.setAdminAddresses(null);
