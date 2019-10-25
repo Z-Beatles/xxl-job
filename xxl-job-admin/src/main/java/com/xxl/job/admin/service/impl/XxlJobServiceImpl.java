@@ -235,7 +235,7 @@ public class XxlJobServiceImpl implements XxlJobService {
         try {
             Date nextValidTime = new CronExpression(xxlJobInfo.getJobCron()).getNextValidTimeAfter(new Date(System.currentTimeMillis() + JobScheduleHelper.PRE_READ_MS));
             if (nextValidTime == null) {
-                return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_never_fire"));
+                return new ReturnT<>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_never_fire"));
             }
             nextTriggerTime = nextValidTime.getTime();
         } catch (ParseException e) {
@@ -328,7 +328,7 @@ public class XxlJobServiceImpl implements XxlJobService {
             }
         }
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         result.put("triggerDayList", triggerDayList);
         result.put("triggerDayCountRunningList", triggerDayCountRunningList);
         result.put("triggerDayCountSucList", triggerDayCountSucList);

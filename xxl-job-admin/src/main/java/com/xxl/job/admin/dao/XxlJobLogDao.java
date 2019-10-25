@@ -33,7 +33,7 @@ public interface XxlJobLogDao {
                              @Param("triggerTimeEnd") Date triggerTimeEnd,
                              @Param("logStatus") int logStatus);
 
-    public XxlJobLog load(@Param("id") long id);
+    XxlJobLog load(@Param("id") long id);
 
     public long save(XxlJobLog xxlJobLog);
 
@@ -53,10 +53,10 @@ public interface XxlJobLogDao {
                         @Param("clearBeforeTime") Date clearBeforeTime,
                         @Param("clearBeforeNum") int clearBeforeNum);
 
-    public List<Long> findFailJobLogIds(@Param("pagesize") int pagesize);
+    List<Long> findFailJobLogIds();
 
-    public int updateAlarmStatus(@Param("logId") long logId,
-                                 @Param("oldAlarmStatus") int oldAlarmStatus,
-                                 @Param("newAlarmStatus") int newAlarmStatus);
+    int updateAlarmStatus(@Param("logId") long logId,
+                          @Param("oldAlarmStatus") int oldAlarmStatus,
+                          @Param("newAlarmStatus") int newAlarmStatus);
 
 }

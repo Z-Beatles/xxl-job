@@ -41,19 +41,19 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        // init i18n
-        initI18n();
+        // 初始化国际化支持
+        this.initI18n();
 
-        // admin registry monitor run
+        // 开启执行器注册监控线程，用于动态监控更新自动注册的执行器机器列表 周期: 30s
         JobRegistryMonitorHelper.getInstance().start();
 
-        // admin monitor run
+        // 失败任务监控线程，用于失败任务重试及报警 周期: 10s
         JobFailMonitorHelper.getInstance().start();
 
-        // admin-server
-        initRpcProvider();
+        // 初始化rpc服务
+        this.initRpcProvider();
 
-        // start-schedule
+        // 开启任务触发器
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");
@@ -61,35 +61,34 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
-
-        // stop-schedule
+        // 停止任务触发器
         JobScheduleHelper.getInstance().toStop();
 
-        // admin trigger pool stop
+        // 停止任务触发器线程池
         JobTriggerPoolHelper.toStop();
 
-        // admin registry stop
+        // 停止执行器注册监控线程
         JobRegistryMonitorHelper.getInstance().toStop();
 
-        // admin monitor stop
+        // 停止失败任务监控线程
         JobFailMonitorHelper.getInstance().toStop();
 
-        // admin-server
-        stopRpcProvider();
+        // 停止prc服务
+        this.stopRpcProvider();
     }
 
     // ---------------------- I18n ----------------------
 
-    private void initI18n(){
-        for (ExecutorBlockStrategyEnum item:ExecutorBlockStrategyEnum.values()) {
+    private void initI18n() {
+        for (ExecutorBlockStrategyEnum item : ExecutorBlockStrategyEnum.values()) {
             item.setTitle(I18nUtil.getString("jobconf_block_".concat(item.name())));
         }
     }
 
     // ---------------------- admin rpc provider (no server version) ----------------------
     private static ServletServerHandler servletServerHandler;
-    private void initRpcProvider(){
-        // init
+
+    private void initRpcProvider() {
         XxlRpcProviderFactory xxlRpcProviderFactory = new XxlRpcProviderFactory();
         xxlRpcProviderFactory.initConfig(
                 NetEnum.NETTY_HTTP,
@@ -106,9 +105,11 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
         // servlet handler
         servletServerHandler = new ServletServerHandler(xxlRpcProviderFactory);
     }
+
     private void stopRpcProvider() throws Exception {
         XxlRpcInvokerFactory.getInstance().stop();
     }
+
     public static void invokeAdminService(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         servletServerHandler.handle(null, request, response);
     }
@@ -116,9 +117,10 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
     // ---------------------- executor-client ----------------------
     private static ConcurrentMap<String, ExecutorBiz> executorBizRepository = new ConcurrentHashMap<>();
+
     public static ExecutorBiz getExecutorBiz(String address) throws Exception {
         // valid
-        if (address==null || address.trim().length()==0) {
+        if (address == null || address.trim().length() == 0) {
             return null;
         }
 

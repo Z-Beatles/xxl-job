@@ -49,7 +49,6 @@ public class JobScheduleHelper {
                 logger.info(">>>>>>>>> init xxl-job admin scheduler success.");
 
                 while (!scheduleThreadToStop) {
-                    // Scan Job
                     long start = System.currentTimeMillis();
 
                     Connection conn = null;

@@ -75,8 +75,8 @@ public class XxlJobExecutor {
         // 初始化日志文件
         XxlJobFileAppender.initLogPath(logPath);
 
-        // 初始化AdminBizList，并且会创建AdminBiz的动态代理XxlRpcReferenceBean，而最后会用到这个类进行自动注册
-        initAdminBizList(adminAddresses, accessToken);
+        // 初始化AdminBizList，并且会创建AdminBiz的动态代理对象XxlRpcReferenceBean
+        this.initAdminBizList(adminAddresses, accessToken);
 
         // 开启日志清理线程
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
@@ -127,7 +127,7 @@ public class XxlJobExecutor {
 
                     String addressUrl = address.concat(AdminBiz.MAPPING);
 
-                    // 通过XxlRpcReferenceBean.getObject()设置动态代理，用来请求和处理rpc信息
+                    // 通过XxlRpcReferenceBean.getObject()生成代理对象，用来请求和处理rpc信息
                     AdminBiz adminBiz = (AdminBiz) new XxlRpcReferenceBean(
                             NetEnum.NETTY_HTTP,
                             serializer,
@@ -191,10 +191,10 @@ public class XxlJobExecutor {
         xxlRpcProviderFactory = new XxlRpcProviderFactory();
         // init config
         xxlRpcProviderFactory.initConfig(NetEnum.NETTY_HTTP, Serializer.SerializeEnum.HESSIAN.getSerializer(), ip, port, accessToken, ExecutorServiceRegistry.class, serviceRegistryParam);
-        // 设置使用ExecutorBizImpl作为服务的处理类，供给调用中心调用
+        // 设置使用ExecutorBizImpl作为服务的处理类，供给admin调用
         xxlRpcProviderFactory.addService(ExecutorBiz.class.getName(), null, new ExecutorBizImpl());
 
-        // start
+        // 注册服务
         xxlRpcProviderFactory.start();
     }
 

@@ -70,7 +70,7 @@ public class JobRegistryMonitorHelper {
                                 }
                             }
 
-                            // 刷新自动注册的执行器在线机器列表
+                            // 更新自动注册的执行器在线机器列表
                             for (XxlJobGroup group : groupList) {
                                 List<String> registryList = appAddressMap.get(group.getAppName());
                                 StringBuilder addressListStr = null;
@@ -102,6 +102,7 @@ public class JobRegistryMonitorHelper {
                 logger.info(">>>>>>>>>>> xxl-job, job registry monitor thread stop");
             }
         });
+
         registryThread.setDaemon(true);
         registryThread.setName("xxl-job, admin JobRegistryMonitorHelper");
         registryThread.start();
