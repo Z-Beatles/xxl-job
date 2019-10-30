@@ -148,7 +148,6 @@ public class JobFailMonitorHelper {
 
         // send monitor email
         if (info != null && info.getAlarmEmail() != null && info.getAlarmEmail().trim().length() > 0) {
-
             // alarmContent
             String alarmContent = "Alarm Job LogId=" + jobLog.getId();
             if (jobLog.getTriggerCode() != ReturnT.SUCCESS_CODE) {
@@ -159,7 +158,7 @@ public class JobFailMonitorHelper {
             }
 
             // email info
-            XxlJobGroup group = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().load(Integer.valueOf(info.getJobGroup()));
+            XxlJobGroup group = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().load(info.getJobGroup());
             String personal = I18nUtil.getString("admin_name_full");
             String title = I18nUtil.getString("jobconf_monitor");
             String content = MessageFormat.format(mailBodyTemplate,
@@ -168,9 +167,8 @@ public class JobFailMonitorHelper {
                     info.getJobDesc(),
                     alarmContent);
 
-            Set<String> emailSet = new HashSet<String>(Arrays.asList(info.getAlarmEmail().split(",")));
+            Set<String> emailSet = new HashSet<>(Arrays.asList(info.getAlarmEmail().split(",")));
             for (String email : emailSet) {
-
                 // make mail
                 try {
                     MimeMessage mimeMessage = XxlJobAdminConfig.getAdminConfig().getMailSender().createMimeMessage();
@@ -193,5 +191,4 @@ public class JobFailMonitorHelper {
         // do something, custom alarm strategy, such as sms
         return alarmResult;
     }
-
 }

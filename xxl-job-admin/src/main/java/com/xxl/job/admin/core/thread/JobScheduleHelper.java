@@ -34,14 +34,12 @@ public class JobScheduleHelper {
     private volatile boolean ringThreadToStop = false;
     private volatile static Map<Integer, List<Integer>> ringData = new ConcurrentHashMap<>();
 
-    public static void main(String[] args) {
-        System.out.println(System.currentTimeMillis() % 1000);
-    }
     public void start() {
         // schedule thread
         scheduleThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                // align second
                 try {
                     TimeUnit.MILLISECONDS.sleep(5000 - System.currentTimeMillis() % 1000);
                 } catch (InterruptedException e) {
@@ -64,6 +62,7 @@ public class JobScheduleHelper {
                         connAutoCommit = conn.getAutoCommit();
                         conn.setAutoCommit(false);
 
+                        // 加锁，支持调度中心集群部署，确保只有一个节点去执行当前任务
                         preparedStatement = conn.prepareStatement("select * from xxl_job_lock where lock_name = 'schedule_lock' for update");
                         preparedStatement.execute();
 
@@ -130,16 +129,16 @@ public class JobScheduleHelper {
                                     }
                                 } else {
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
-                                    //  调度时间在未来5秒之内的（预读5s），基于timewheel时间轮（map<秒数，list<任务实体>>）
-                                    //  根据5秒内即将执行的任务的执行时间的秒数，将其放到timeheel对应秒数的list中，修改下次执行时间
+                                    //  调度时间在未来5秒之内的（预读5s），基于timewheel时间轮（map<秒数，list<任务实体>>）来调度
+                                    //  根据5秒内即将执行的任务的执行时间的秒数，将其放到timeheel对应秒数的list中，并修改下次执行时间
 
-                                    // 1、make ring second
+                                    // 1、获取任务下次执行时的秒数
                                     int ringSecond = (int) ((jobInfo.getTriggerNextTime() / 1000) % 60);
 
-                                    // 2、push time ring
+                                    // 2、放入时间轮
                                     pushTimeRing(ringSecond, jobInfo.getId());
 
-                                    // 3、fresh next
+                                    // 3、刷新下次执行时间
                                     Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date(jobInfo.getTriggerNextTime()));
                                     if (nextValidTime != null) {
                                         jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
@@ -151,7 +150,7 @@ public class JobScheduleHelper {
                                     }
                                 }
                             }
-                            // 3、update trigger info
+                            // 3、更新任务信息
                             for (XxlJobInfo jobInfo : scheduleList) {
                                 XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().scheduleUpdate(jobInfo);
                             }
@@ -238,7 +237,8 @@ public class JobScheduleHelper {
                     try {
                         // second data
                         List<Integer> ringItemData = new ArrayList<>();
-                        int nowSecond = Calendar.getInstance().get(Calendar.SECOND);   // 避免处理耗时太长，跨过刻度，向前校验一个刻度；
+                        int nowSecond = Calendar.getInstance().get(Calendar.SECOND);
+                        // 避免处理耗时太长，跨过刻度，向前校验一个刻度
                         for (int i = 0; i < 2; i++) {
                             List<Integer> tmpData = ringData.remove((nowSecond + 60 - i) % 60);
                             if (tmpData != null) {
@@ -247,8 +247,8 @@ public class JobScheduleHelper {
                         }
 
                         // ring trigger
-                        logger.debug(">>>>>>>>>>> xxl-job, time-ring beat : " + nowSecond + " = " + Arrays.asList(ringItemData));
-                        if (ringItemData != null && ringItemData.size() > 0) {
+                        logger.debug(">>>>>>>>>>> xxl-job, time-ring beat : " + nowSecond + " = " + Collections.singletonList(ringItemData));
+                        if (ringItemData.size() > 0) {
                             // do trigger
                             for (int jobId : ringItemData) {
                                 // do trigger
@@ -290,7 +290,7 @@ public class JobScheduleHelper {
         }
         ringItemData.add(jobId);
 
-        logger.debug(">>>>>>>>>>> xxl-job, shecule push time-ring : " + ringSecond + " = " + Arrays.asList(ringItemData));
+        logger.debug(">>>>>>>>>>> xxl-job, schedule push time-ring : " + ringSecond + " = " + Collections.singletonList(ringItemData));
     }
 
     public void toStop() {

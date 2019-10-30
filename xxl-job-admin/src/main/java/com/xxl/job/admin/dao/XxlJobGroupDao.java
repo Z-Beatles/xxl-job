@@ -18,7 +18,7 @@ public interface XxlJobGroupDao {
 
     int save(XxlJobGroup xxlJobGroup);
 
-    public int update(XxlJobGroup xxlJobGroup);
+    int update(XxlJobGroup xxlJobGroup);
 
     public int remove(@Param("id") int id);
 

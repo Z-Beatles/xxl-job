@@ -50,10 +50,10 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
         // 失败任务监控线程，用于失败任务重试及报警 周期: 10s
         JobFailMonitorHelper.getInstance().start();
 
-        // 初始化rpc服务
+        // 初始化rpc服务，响应执行器请求
         this.initRpcProvider();
 
-        // 开启任务调度
+        // 开启任务调度线程
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");
@@ -99,7 +99,9 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
                 null,
                 null);
 
-        // 注册服务adminBiz用于响应执行器的注册请求
+        // 注册服务adminBiz用于响应执行器的请求
+        // serviceKey格式为iface#version 如:com.xxl.job.core.biz.AdminBiz
+        // serviceBean为响应请求的处理对象
         xxlRpcProviderFactory.addService(AdminBiz.class.getName(), null, XxlJobAdminConfig.getAdminConfig().getAdminBiz());
 
         // 设置servlet处理器

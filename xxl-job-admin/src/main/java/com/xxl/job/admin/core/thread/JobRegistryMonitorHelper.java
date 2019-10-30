@@ -42,13 +42,13 @@ public class JobRegistryMonitorHelper {
                         List<XxlJobGroup> groupList = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().findByAddressType(0);
                         if (groupList != null && !groupList.isEmpty()) {
 
-                            // 移除所有超时的在线执行器 (admin/executor)
+                            // 移除所有心跳超时的执行器地址 (admin/executor)
                             List<Integer> ids = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findDead(RegistryConfig.DEAD_TIMEOUT);
                             if (ids != null && ids.size() > 0) {
                                 XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().removeDead(ids);
                             }
 
-                            // 刷新所有未超时的在线执行器 (admin/executor)
+                            // 获取所有未超时的在线执行器注册信息 (admin/executor)
                             HashMap<String, List<String>> appAddressMap = new HashMap<>();
                             List<XxlJobRegistry> list = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAll(RegistryConfig.DEAD_TIMEOUT);
                             if (list != null) {
@@ -91,6 +91,7 @@ public class JobRegistryMonitorHelper {
                             logger.error(">>>>>>>>>>> xxl-job, job registry monitor thread error:{}", e);
                         }
                     }
+
                     try {
                         TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);
                     } catch (InterruptedException e) {
