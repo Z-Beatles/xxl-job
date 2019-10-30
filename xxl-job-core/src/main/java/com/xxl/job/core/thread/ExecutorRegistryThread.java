@@ -41,6 +41,7 @@ public class ExecutorRegistryThread {
             public void run() {
                 // registry
                 while (!toStop) {
+                    // 每30秒向调度中心发送一次注册信息
                     try {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address);
                         for (AdminBiz adminBiz : XxlJobExecutor.getAdminBizList()) {
