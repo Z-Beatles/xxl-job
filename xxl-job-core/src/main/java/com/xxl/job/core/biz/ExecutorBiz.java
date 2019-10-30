@@ -10,19 +10,19 @@ import com.xxl.job.core.biz.model.TriggerParam;
 public interface ExecutorBiz {
 
     /**
-     * 心跳测试
+     * 心跳测试。故障转移策略时使用
      *
      * @return
      */
     ReturnT<String> beat();
 
     /**
-     * idle beat
+     * 心跳测试。忙碌转移策略时使用
      *
      * @param jobId
      * @return
      */
-     ReturnT<String> idleBeat(int jobId);
+    ReturnT<String> idleBeat(int jobId);
 
     /**
      * 停止任务执行
@@ -43,9 +43,9 @@ public interface ExecutorBiz {
     ReturnT<LogResult> log(long logDateTim, long logId, int fromLineNum);
 
     /**
-     * run
+     * 执行任务
      *
-     * @param triggerParam
+     * @param triggerParam 触发参数
      * @return
      */
     ReturnT<String> run(TriggerParam triggerParam);
