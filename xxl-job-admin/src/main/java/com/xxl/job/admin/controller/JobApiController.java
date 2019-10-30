@@ -18,14 +18,14 @@ import java.io.IOException;
 @Controller
 public class JobApiController implements InitializingBean {
 
-
     @Override
     public void afterPropertiesSet() throws Exception {
     }
 
     @RequestMapping(AdminBiz.MAPPING)
-    @PermissionLimit(limit=false)
+    @PermissionLimit(limit = false)
     public void api(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        // 响应并路由执行器的api请求
         XxlJobScheduler.invokeAdminService(request, response);
     }
 }

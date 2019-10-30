@@ -53,7 +53,7 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
         // 初始化rpc服务
         this.initRpcProvider();
 
-        // 开启任务触发器
+        // 开启任务调度
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");
@@ -99,10 +99,10 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
                 null,
                 null);
 
-        // add services
+        // 注册服务adminBiz用于响应执行器的注册请求
         xxlRpcProviderFactory.addService(AdminBiz.class.getName(), null, XxlJobAdminConfig.getAdminConfig().getAdminBiz());
 
-        // servlet handler
+        // 设置servlet处理器
         servletServerHandler = new ServletServerHandler(xxlRpcProviderFactory);
     }
 

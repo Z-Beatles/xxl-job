@@ -71,7 +71,6 @@ public class XxlJobTrigger {
             }
             processTrigger(group, jobInfo, finalFailRetryCount, triggerType, shardingParam[0], shardingParam[1]);
         }
-
     }
 
     private static boolean isNumeric(String str) {
@@ -92,7 +91,6 @@ public class XxlJobTrigger {
      * @param total               sharding index
      */
     private static void processTrigger(XxlJobGroup group, XxlJobInfo jobInfo, int finalFailRetryCount, TriggerTypeEnum triggerType, int index, int total) {
-
         // block strategy
         ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum
                 .match(jobInfo.getExecutorBlockStrategy(), ExecutorBlockStrategyEnum.SERIAL_EXECUTION);

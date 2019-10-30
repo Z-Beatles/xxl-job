@@ -34,6 +34,9 @@ public class JobScheduleHelper {
     private volatile boolean ringThreadToStop = false;
     private volatile static Map<Integer, List<Integer>> ringData = new ConcurrentHashMap<>();
 
+    public static void main(String[] args) {
+        System.out.println(System.currentTimeMillis() % 1000);
+    }
     public void start() {
         // schedule thread
         scheduleThread = new Thread(new Runnable() {
@@ -57,7 +60,6 @@ public class JobScheduleHelper {
 
                     boolean preReadSuc = true;
                     try {
-
                         conn = XxlJobAdminConfig.getAdminConfig().getDataSource().getConnection();
                         connAutoCommit = conn.getAutoCommit();
                         conn.setAutoCommit(false);
@@ -69,7 +71,7 @@ public class JobScheduleHelper {
 
                         // 1、pre read
                         long nowTime = System.currentTimeMillis();
-                        // 查询所有在预读时间内需要执行的任务 5000ms
+                        // 查询所有在预读时间内需要执行的任务 预读时间5s
                         List<XxlJobInfo> scheduleList = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().scheduleJobQuery(nowTime + PRE_READ_MS);
                         if (scheduleList != null && scheduleList.size() > 0) {
                             // 2、push time-ring
@@ -78,6 +80,7 @@ public class JobScheduleHelper {
                                 // time-ring jump
                                 if (nowTime > jobInfo.getTriggerNextTime() + PRE_READ_MS) {
                                     // 2.1、trigger-expire > 5s：pass && make next-trigger-time
+                                    // 超时未调度（超过调度时间5秒）的任务不再执行，修改下次执行时间
 
                                     // fresh next
                                     Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date());
@@ -92,7 +95,7 @@ public class JobScheduleHelper {
 
                                 } else if (nowTime > jobInfo.getTriggerNextTime()) {
                                     // 2.2、trigger-expire < 5s：direct-trigger && make next-trigger-time
-
+                                    // 超过调度时间但未超时（超过5秒之内）的任务，立即放入执行线程池，再修改执行时间
                                     CronExpression cronExpression = new CronExpression(jobInfo.getJobCron());
                                     long nextTime = cronExpression.getNextValidTimeAfter(new Date()).getTime();
 
@@ -104,8 +107,8 @@ public class JobScheduleHelper {
                                     jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
                                     jobInfo.setTriggerNextTime(nextTime);
 
-
                                     // next-trigger-time in 5s, pre-read again
+                                    // 接着判断下次执行时间若在5秒之内，加入timewheel的map后再次修改下次执行时间
                                     if (jobInfo.getTriggerNextTime() - nowTime < PRE_READ_MS) {
 
                                         // 1、make ring second
@@ -127,6 +130,8 @@ public class JobScheduleHelper {
                                     }
                                 } else {
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
+                                    //  调度时间在未来5秒之内的（预读5s），基于timewheel时间轮（map<秒数，list<任务实体>>）
+                                    //  根据5秒内即将执行的任务的执行时间的秒数，将其放到timeheel对应秒数的list中，修改下次执行时间
 
                                     // 1、make ring second
                                     int ringSecond = (int) ((jobInfo.getTriggerNextTime() / 1000) % 60);
@@ -280,7 +285,7 @@ public class JobScheduleHelper {
         // push async ring
         List<Integer> ringItemData = ringData.get(ringSecond);
         if (ringItemData == null) {
-            ringItemData = new ArrayList<Integer>();
+            ringItemData = new ArrayList<>();
             ringData.put(ringSecond, ringItemData);
         }
         ringItemData.add(jobId);
@@ -289,7 +294,6 @@ public class JobScheduleHelper {
     }
 
     public void toStop() {
-
         // 1、stop schedule
         scheduleThreadToStop = true;
         try {
