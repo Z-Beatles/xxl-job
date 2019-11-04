@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -82,15 +83,7 @@ public class JobScheduleHelper {
                                     // 超时未调度（超过调度时间5秒）的任务不再执行，修改下次执行时间
 
                                     // fresh next
-                                    Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date());
-                                    if (nextValidTime != null) {
-                                        jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
-                                        jobInfo.setTriggerNextTime(nextValidTime.getTime());
-                                    } else {
-                                        jobInfo.setTriggerStatus(0);
-                                        jobInfo.setTriggerLastTime(0);
-                                        jobInfo.setTriggerNextTime(0);
-                                    }
+                                    refreshNextValidTime(jobInfo, new Date());
 
                                 } else if (nowTime > jobInfo.getTriggerNextTime()) {
                                     // 2.2、trigger-expire < 5s：direct-trigger && make next-trigger-time
@@ -117,15 +110,7 @@ public class JobScheduleHelper {
                                         pushTimeRing(ringSecond, jobInfo.getId());
 
                                         // 3、fresh next
-                                        Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date(jobInfo.getTriggerNextTime()));
-                                        if (nextValidTime != null) {
-                                            jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
-                                            jobInfo.setTriggerNextTime(nextValidTime.getTime());
-                                        } else {
-                                            jobInfo.setTriggerStatus(0);
-                                            jobInfo.setTriggerLastTime(0);
-                                            jobInfo.setTriggerNextTime(0);
-                                        }
+                                        refreshNextValidTime(jobInfo, new Date(jobInfo.getTriggerNextTime()));
                                     }
                                 } else {
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
@@ -139,15 +124,7 @@ public class JobScheduleHelper {
                                     pushTimeRing(ringSecond, jobInfo.getId());
 
                                     // 3、刷新下次执行时间
-                                    Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date(jobInfo.getTriggerNextTime()));
-                                    if (nextValidTime != null) {
-                                        jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
-                                        jobInfo.setTriggerNextTime(nextValidTime.getTime());
-                                    } else {
-                                        jobInfo.setTriggerStatus(0);
-                                        jobInfo.setTriggerLastTime(0);
-                                        jobInfo.setTriggerNextTime(0);
-                                    }
+                                    refreshNextValidTime(jobInfo, new Date(jobInfo.getTriggerNextTime()));
                                 }
                             }
                             // 3、更新任务信息
@@ -279,6 +256,18 @@ public class JobScheduleHelper {
         ringThread.setDaemon(true);
         ringThread.setName("xxl-job, admin JobScheduleHelper#ringThread");
         ringThread.start();
+    }
+
+    private void refreshNextValidTime(XxlJobInfo jobInfo, Date fromTime) throws ParseException {
+        Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(fromTime);
+        if (nextValidTime != null) {
+            jobInfo.setTriggerLastTime(jobInfo.getTriggerNextTime());
+            jobInfo.setTriggerNextTime(nextValidTime.getTime());
+        } else {
+            jobInfo.setTriggerStatus(0);
+            jobInfo.setTriggerLastTime(0);
+            jobInfo.setTriggerNextTime(0);
+        }
     }
 
     private void pushTimeRing(int ringSecond, int jobId) {
